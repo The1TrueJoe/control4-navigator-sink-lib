@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<devicedata>
+  <copyright>openHC</copyright>
+  <creator>openHC</creator>
+  <name>openHC Navigator Sink</name>
+  <manufacturer>openHC</manufacturer>
+  <model>ohc-nav-sink</model>
+  <created>2026-09-07</created>
+  <modified>2026-09-07</modified>
+  <version>1</version>
+  <control>lua_gen</control>
+  <controlmethod>ip</controlmethod>
+  <driver>DriverWorks</driver>
+  <documentation file="www/documentation.html"/>
+
+  <!-- Modeled on the real control4_ea1.c4i: the on-screen navigator is the
+       `controller` proxy (+ a `uidevice` companion). Validated end-to-end on an
+       EA-3: this shape loads, auto-binds as a room's on-screen device, and
+       receives the remote's nav keys via ReceivedFromProxy. -->
+  <capabilities>
+    <has_video_output>true</has_video_output>
+    <has_ui_device>true</has_ui_device>
+    <has_navigator>true</has_navigator>
+    <auto_bind_onscreen_selection proxybindingid="5001">true</auto_bind_onscreen_selection>
+  </capabilities>
+
+  <proxies>
+    <proxy proxybindingid="5001" primary="True" name="openHC Onscreen">controller</proxy>
+    <proxy proxybindingid="5002">uidevice</proxy>
+  </proxies>
+
+  <connections>
+    <connection><id>5001</id><facing>6</facing><connectionname>Controller</connectionname>
+      <type>2</type><consumer>False</consumer><audiosource>False</audiosource>
+      <videosource>False</videosource><linelevel>False</linelevel>
+      <classes><class><classname>CONTROLLER</classname></class></classes><hidden>True</hidden></connection>
+    <connection><id>5002</id><facing>6</facing><connectionname>UI Device</connectionname>
+      <type>2</type><consumer>False</consumer><audiosource>False</audiosource>
+      <videosource>False</videosource><linelevel>False</linelevel>
+      <classes><class><classname>UI_DEVICE</classname></class></classes><hidden>True</hidden></connection>
+
+    <!-- physical HDMI output: bind to the (fake) TV's HDMI input -->
+    <connection proxybindingid="5001"><id>4072</id><facing>6</facing>
+      <connectionname>HDMI (Audio/Video)</connectionname><type>6</type>
+      <consumer>False</consumer><audiosource>True</audiosource><videosource>True</videosource>
+      <linelevel>True</linelevel><classes><class><classname>HDMI</classname></class></classes></connection>
+
+    <!-- room on-screen selection endpoint -->
+    <connection proxybindingid="5001"><id>7500</id><facing>6</facing>
+      <connectionname>Onscreen Navigator</connectionname><type>7</type>
+      <consumer>False</consumer><audiosource>False</audiosource><videosource>False</videosource>
+      <linelevel>False</linelevel><classes><class><classname>ONSCREEN_SELECTION</classname></class></classes></connection>
+  </connections>
+
+  <config>
+    <script file="driver.lua" jit="1"/>
+    <properties>
+      <property><name>Target IP Address</name><type>STRING</type><default>192.168.1.146</default>
+        <tooltip>Host running the control4-navigator-sink-lib sink.</tooltip></property>
+      <property><name>Target Port</name><type>RANGED_INTEGER</type><minimum>1</minimum><maximum>65535</maximum><default>9010</default></property>
+      <property><name>Last Command</name><type>STRING</type><readonly>true</readonly><default></default></property>
+      <property><name>Link Status</name><type>STRING</type><readonly>true</readonly><default>disconnected</default></property>
+    </properties>
+    <actions><action><name>Send Test Line</name><command>TEST_LINK</command></action></actions>
+  </config>
+</devicedata>
