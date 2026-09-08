@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <devicedata>
-  <copyright>openHC</copyright>
-  <creator>openHC</creator>
-  <name>openHC Navigator Sink</name>
-  <manufacturer>openHC</manufacturer>
-  <model>ohc-nav-sink</model>
+  <copyright>Copyright 2026 Joseph Telaak</copyright>
+  <creator>Joseph Telaak</creator>
+  <name>Control4 Navigator Sink</name>
+  <manufacturer>Joseph Telaak</manufacturer>
+  <model>c4-nav-sink</model>
   <created>2026-09-07</created>
   <modified>2026-09-07</modified>
   <version>1</version>
@@ -25,7 +25,7 @@
   </capabilities>
 
   <proxies>
-    <proxy proxybindingid="5001" primary="True" name="openHC Onscreen">controller</proxy>
+    <proxy proxybindingid="5001" primary="True" name="Navigator Sink">controller</proxy>
     <proxy proxybindingid="5002">uidevice</proxy>
   </proxies>
 

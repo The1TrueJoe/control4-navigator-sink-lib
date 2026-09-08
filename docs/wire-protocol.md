@@ -13,7 +13,7 @@ This is the ground truth captured from a live EA-3 (Director 3.3.0).
 ### `hello`
 Sent once when the driver starts.
 ```json
-{"type":"hello","message":"openHC navigator sink driver online"}
+{"type":"hello","message":"Control4 Navigator Sink driver online"}
 ```
 
 ### `bind`

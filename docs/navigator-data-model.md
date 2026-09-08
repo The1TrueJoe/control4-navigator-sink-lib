@@ -36,7 +36,7 @@ Missing: the full room/device catalog and per-device state. **Fold with
 
 ### b. Controller REST API `/api/v1/…` (HTTPS 443, JWT) — recommended for structure
 **Confirmed against a live EA-3** (OS 3.3.3) — see the captured schemas in the
-openHC research (`c4-recon/research/api/DATA-MODEL.md`) and the typed structs in
+Control4 Navigator research (`c4-recon/research/api/DATA-MODEL.md`) and the typed structs in
 [`src/rest.rs`](../src/rest.rs). Served by the `broker` node app.
 
 - `GET /api/v1/locations` — location tree (site 2 / building 3 / floor 4 / room 8) → [`Location`]

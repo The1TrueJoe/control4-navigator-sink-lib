@@ -10,7 +10,7 @@ use control4_navigator_sink_lib::{NavigatorState, SinkEvent, SinkServer};
 fn main() {
     let addr = std::env::args().nth(1).unwrap_or_else(|| "0.0.0.0:9010".into());
     let rx = SinkServer::listen(&addr).expect("bind");
-    println!("openHC navigator sink listening on {addr}");
+    println!("Control4 Navigator Sink listening on {addr}");
 
     let mut state = NavigatorState::new();
     for msg in rx {

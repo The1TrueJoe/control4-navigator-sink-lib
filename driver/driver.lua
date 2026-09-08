@@ -1,5 +1,5 @@
 --[[
-  openHC Navigator Sink — DriverWorks driver (controller side)
+  Control4 Navigator Sink — DriverWorks driver (controller side)
   ============================================================
   Companion to control4-navigator-sink-lib. Presents the on-screen navigator
   proxies (controller 5001 + uidevice 5002), an HDMI output (4072) and the
@@ -20,7 +20,7 @@ local gClient        -- persistent TCP client
 local gConnected = false
 local gQueue = {}     -- outbound line buffer (flushed on connect)
 
-local function log(...) print("[ohc-nav-sink] " .. table.concat({...}, " ")) end
+local function log(...) print("[nav-sink] " .. table.concat({...}, " ")) end
 
 -- ---- minimal JSON encoding (escape so every frame stays on one line) --------
 local function jstr(s)
@@ -109,7 +109,7 @@ function OnDriverLateInit()
   TargetIP   = Properties["Target IP Address"] or TargetIP
   TargetPort = tonumber(Properties["Target Port"]) or TargetPort
   connect()
-  send('{"type":"hello","message":"openHC navigator sink driver online"}')
+  send('{"type":"hello","message":"Control4 Navigator Sink online"}')
 end
 
 function OnDriverDestroyed()
