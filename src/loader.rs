@@ -175,6 +175,48 @@ pub fn load_project(src: &dyn ProjectSource) -> Result<Project> {
     Ok(project)
 }
 
+/// Build a fully-populated **live** [`Project`] in one call — the complete
+/// navigator data source. This is [`load_project`] (rooms, deduped devices,
+/// Watch/Listen sources, icons, favorites) plus, folded in per room: live state
+/// (power/volume/mute/selected source, from room variables) and now-playing
+/// (title/app/state/art/transports, from each powered-on room's selected device).
+///
+/// Consumers should call this rather than re-implementing the variable/now-playing
+/// orchestration. Best-effort per room: a room whose variables or now-playing fail
+/// to fetch keeps its structure, just without that live layer.
+pub fn load_live_project(src: &dyn ProjectSource) -> Result<Project> {
+    let mut project = load_project(src)?;
+    let room_ids: Vec<u32> = project.rooms.keys().copied().collect();
+    for rid in room_ids {
+        if let Ok(vars) = load_room_variables(src, rid) {
+            if let Some(room) = project.rooms.get_mut(&rid) {
+                apply_room_variables(room, &vars);
+            }
+        }
+        // Now-playing comes from the selected source device's own variables; clear
+        // stale metadata when the room is off or nothing is selected.
+        let selected = project
+            .rooms
+            .get(&rid)
+            .and_then(|r| r.power_on.then_some(r.now_playing.source_device).flatten());
+        match selected {
+            Some(dev) => {
+                if let Ok(dvars) = load_room_variables(src, dev) {
+                    if let Some(room) = project.rooms.get_mut(&rid) {
+                        apply_now_playing(room, &dvars);
+                    }
+                }
+            }
+            None => {
+                if let Some(room) = project.rooms.get_mut(&rid) {
+                    clear_now_playing(room);
+                }
+            }
+        }
+    }
+    Ok(project)
+}
+
 /// Fetch a room's Watch/Listen source lists (`/api/v1/rooms/:id/media`).
 pub fn load_room_media(src: &dyn ProjectSource, room_id: u32) -> Result<RoomMedia> {
     get(src, &format!("/api/v1/rooms/{room_id}/media"))

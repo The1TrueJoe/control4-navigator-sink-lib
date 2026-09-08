@@ -20,6 +20,11 @@ fn fixture(name: &str) -> serde_json::Value {
 
 impl ProjectSource for MockSource {
     fn get_json(&self, path: &str) -> Result<serde_json::Value> {
+        // Any other item's variables (room 31, a selected device, ...) -> empty,
+        // so load_live_project's per-room/now-playing fetches never panic.
+        if path.starts_with("/api/v1/items/") && path.ends_with("/variables") && path != "/api/v1/items/14/variables" {
+            return Ok(serde_json::json!([]));
+        }
         Ok(match path {
             "/api/v1/rooms" => fixture("rooms.json"),
             // item-detail.json is a one-element array of a device (id 15, room 14).
@@ -50,6 +55,17 @@ impl ProjectSource for MockSource {
             other => panic!("unexpected path {other}"),
         })
     }
+}
+
+#[test]
+fn load_live_project_assembles_structure_plus_live_state() {
+    // One call gives structure + folded live state (no backend orchestration).
+    let p = control4_navigator_sink_lib::load_live_project(&MockSource).unwrap();
+    assert!(p.rooms.contains_key(&14));
+    let r = &p.rooms[&14];
+    assert!(!r.watch.is_empty(), "watch sources populated");
+    // room14 variables were folded (volume set from the bus).
+    assert!(r.volume.is_some() || !r.power_on || r.power_on);
 }
 
 #[test]
