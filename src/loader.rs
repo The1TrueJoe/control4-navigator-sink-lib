@@ -232,7 +232,10 @@ pub fn apply_room_variables(room: &mut Room, vars: &[Variable]) -> bool {
     for v in vars {
         match v.variable_id {
             room_var::POWER_STATE => room.power_on = v.as_bool().unwrap_or(room.power_on),
-            room_var::CURRENT_VOLUME => room.volume = v.as_i64().map(|n| n.clamp(0, 100) as u8),
+            // -1 means "no discrete volume / not applicable" — treat as unknown, not 0.
+            room_var::CURRENT_VOLUME => {
+                room.volume = v.as_i64().filter(|&n| n >= 0).map(|n| n.clamp(0, 100) as u8)
+            }
             room_var::IS_MUTED => room.is_muted = v.as_bool().unwrap_or(room.is_muted),
             room_var::CURRENT_SELECTED_DEVICE => {
                 room.now_playing.source_device = v.as_i64().map(|n| n as u32).filter(|&x| x != 0)
