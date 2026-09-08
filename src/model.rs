@@ -195,7 +195,12 @@ pub struct Source {
     pub audio_video: bool,
 }
 
-/// What is currently playing / selected in a room.
+/// What is currently playing / selected in a room. `title`/`artist`/`album`/
+/// `art_url` are the rich media fields (present for media services that expose
+/// them); `app` is the current app/station/channel (e.g. a Roku app); `state` is
+/// the playback state; `transports` is the set of supported transport controls.
+/// These come from the selected device's own variables (driver-specific, matched
+/// by name), not a single universal source.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NowPlaying {
     pub title: Option<String>,
@@ -204,6 +209,15 @@ pub struct NowPlaying {
     pub art_url: Option<String>,
     /// Device id currently selected as the room's source.
     pub source_device: Option<u32>,
+    /// Current app / station / channel on the source (e.g. Roku `CURRENT_APP`).
+    #[serde(default)]
+    pub app: Option<String>,
+    /// Playback state, if the driver reports one (e.g. `Playing`, `Paused`).
+    #[serde(default)]
+    pub state: Option<String>,
+    /// Supported transport controls (e.g. `PLAY`, `PAUSE`, `SCAN_FWD`, `SCAN_REV`).
+    #[serde(default)]
+    pub transports: Vec<String>,
 }
 
 /// A room and the state a navigator shows for it.

@@ -53,7 +53,8 @@ pub mod sink;
 
 pub use error::{Error, Result};
 pub use loader::{
-    apply_room_variables, load_project, load_room_media, load_room_variables, ProjectSource,
+    apply_now_playing, apply_room_variables, clear_now_playing, load_project, load_room_media,
+    load_room_variables, ProjectSource,
 };
 pub use model::{
     menu_for_proxy, BindingInfo, Device, Menu, NavigatorState, NowPlaying, PopupState, Project,

@@ -1,9 +1,10 @@
 //! Loader tests: build a Project from a mock source backed by captured fixtures.
 
 use control4_navigator_sink_lib::loader::{
-    apply_room_variables, load_project, load_room_variables, ProjectSource,
+    apply_now_playing, apply_room_variables, load_project, load_room_variables, ProjectSource,
 };
-use control4_navigator_sink_lib::{ProxyKind, Result};
+use control4_navigator_sink_lib::rest::Variable;
+use control4_navigator_sink_lib::{ProxyKind, Result, Room};
 
 /// Serves fixture files for known API paths.
 struct MockSource;
@@ -79,6 +80,27 @@ fn loads_room_media_into_watch_and_listen() {
     assert_eq!(room.name_of(540), Some("Tuner"));
     // room 31 served no media -> empty lists (best-effort, no panic).
     assert!(project.rooms[&31].watch.is_empty());
+}
+
+#[test]
+fn now_playing_from_device_vars_by_name() {
+    // Real Roku TV shape: ids collide (two 1003s), value is a string, some empty.
+    let vars: Vec<Variable> = serde_json::from_value(serde_json::json!([
+        { "id": 1009, "varName": "CURRENT_APP", "variableId": 1003, "value": "Spectrum TV" },
+        { "id": 1009, "varName": "CURRENT_INPUT", "variableId": 1003, "value": 0 },
+        { "id": 1009, "varName": "CURRENT_PLAYBACK_STATE", "variableId": 1002, "value": "Playing" },
+        { "id": 1009, "varName": "TRANSPORTS_SUPPORTED", "variableId": 1027, "value": "PLAY,PAUSE,SCAN_FWD,SCAN_REV" },
+        { "id": 1009, "varName": "MEDIA_TITLE", "variableId": 9001, "value": "" }
+    ]))
+    .unwrap();
+    let mut room = Room::default();
+    assert!(apply_now_playing(&mut room, &vars));
+    let np = &room.now_playing;
+    assert_eq!(np.app.as_deref(), Some("Spectrum TV"));
+    assert_eq!(np.state.as_deref(), Some("Playing"));
+    assert_eq!(np.transports, vec!["PLAY", "PAUSE", "SCAN_FWD", "SCAN_REV"]);
+    // empty MEDIA_TITLE is ignored (not set to "").
+    assert_eq!(np.title, None);
 }
 
 #[test]

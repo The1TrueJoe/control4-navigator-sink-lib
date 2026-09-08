@@ -178,6 +178,53 @@ pub fn load_room_variables(src: &dyn ProjectSource, room_id: u32) -> Result<Vec<
     get(src, &format!("/api/v1/items/{room_id}/variables"))
 }
 
+/// Fold a selected source device's own variables into the room's [`NowPlaying`].
+///
+/// Device variables are **driver-specific** and their ids even collide within one
+/// item (e.g. a Roku TV has two `1003`s: `CURRENT_APP` and `CURRENT_INPUT`), so we
+/// match by variable **name**, case-insensitively, taking the first non-empty
+/// string value. There is no single universal now-playing variable across proxies.
+/// Returns `true` if anything changed.
+pub fn apply_now_playing(room: &mut Room, device_vars: &[Variable]) -> bool {
+    let before = room.now_playing.clone();
+
+    let find = |names: &[&str]| -> Option<String> {
+        device_vars.iter().find_map(|v| {
+            let n = v.var_name.to_ascii_uppercase();
+            if !names.iter().any(|w| n == *w) {
+                return None;
+            }
+            let s = v.value.as_str().map(str::to_string)?;
+            let s = s.trim();
+            (!s.is_empty()).then(|| s.to_string())
+        })
+    };
+
+    let np = &mut room.now_playing;
+    np.title = find(&["MEDIA_TITLE", "CURRENT_TITLE", "SONG_TITLE", "NOW_PLAYING_TITLE", "TITLE"]);
+    np.artist = find(&["MEDIA_ARTIST", "CURRENT_ARTIST", "ARTIST"]);
+    np.album = find(&["MEDIA_ALBUM", "CURRENT_ALBUM", "ALBUM"]);
+    np.art_url = find(&[
+        "MEDIA_ART_URL", "ALBUM_ART_URL", "COVER_ART_URL", "CURRENT_MEDIA_URL", "ART_URL", "IMAGE_URL",
+    ]);
+    np.app = find(&["CURRENT_APP", "CURRENT_STATION", "CURRENT_CHANNEL", "CURRENT_SOURCE"]);
+    np.state = find(&["CURRENT_PLAYBACK_STATE", "PLAYBACK_STATE", "PLAY_STATE", "MEDIA_STATE"]);
+    np.transports = find(&["TRANSPORTS_SUPPORTED"])
+        .map(|s| s.split(',').map(|t| t.trim().to_string()).filter(|t| !t.is_empty()).collect())
+        .unwrap_or_default();
+
+    room.now_playing != before
+}
+
+/// Clear a room's now-playing rich fields (keeps `source_device`) — call when the
+/// room is off so stale metadata doesn't linger.
+pub fn clear_now_playing(room: &mut Room) -> bool {
+    let before = room.now_playing.clone();
+    let src = room.now_playing.source_device;
+    room.now_playing = crate::model::NowPlaying { source_device: src, ..Default::default() };
+    room.now_playing != before
+}
+
 /// Fold room variables into a [`Room`]'s live state (power, volume, mute, selected
 /// device). Returns `true` if anything changed.
 pub fn apply_room_variables(room: &mut Room, vars: &[Variable]) -> bool {
