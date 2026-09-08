@@ -32,7 +32,18 @@ fn get<T: DeserializeOwned>(src: &dyn ProjectSource, path: &str) -> Result<T> {
 /// (rooms, and devices placed in their rooms).
 pub fn load_project(src: &dyn ProjectSource) -> Result<Project> {
     let rooms: Vec<RoomInfo> = get(src, "/api/v1/rooms")?;
-    let items: Vec<Item> = get(src, "/api/v1/items")?;
+    // `?tree=false` returns a flat list carrying proxy/room/categories on devices.
+    // Parse per-item and skip anything that doesn't fit, so schema drift or an odd
+    // agent/root entry never fails the whole sync.
+    let items_val = src.get_json("/api/v1/items?tree=false")?;
+    let items: Vec<Item> = items_val
+        .as_array()
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|v| serde_json::from_value::<Item>(v.clone()).ok())
+                .collect()
+        })
+        .unwrap_or_default();
 
     let mut project = Project::default();
     for r in rooms {

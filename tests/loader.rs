@@ -22,7 +22,7 @@ impl ProjectSource for MockSource {
         Ok(match path {
             "/api/v1/rooms" => fixture("rooms.json"),
             // item-detail.json is a one-element array of a device (id 15, room 14).
-            "/api/v1/items" => fixture("item-detail.json"),
+            "/api/v1/items?tree=false" => fixture("item-detail.json"),
             "/api/v1/items/14/variables" => fixture("room14-variables.json"),
             other => panic!("unexpected path {other}"),
         })
