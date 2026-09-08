@@ -158,6 +158,42 @@ impl Variable {
     }
 }
 
+/// A favorite from `GET /api/v1/agents/ui_configuration/favorites/`. `path` is
+/// either a menu (`/v1/rooms/14/watch`) or a pinned item (`/v1/rooms/14/items/475`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Favorite {
+    #[serde(default)]
+    pub id: Option<String>,
+    pub path: String,
+    #[serde(default)]
+    pub menu: Option<String>,
+    #[serde(default)]
+    pub location_id: Option<u32>,
+}
+
+impl Favorite {
+    /// If this favorite pins an item, return `(room_id, item_id)`.
+    pub fn as_item(&self) -> Option<(u32, u32)> {
+        // path like "/v1/rooms/<room>/items/<item>"
+        let mut it = self.path.split('/').filter(|s| !s.is_empty());
+        let mut room = None;
+        let mut item = None;
+        let mut parts = Vec::new();
+        while let Some(seg) = it.next() {
+            parts.push(seg);
+        }
+        for w in parts.windows(2) {
+            match w {
+                ["rooms", r] => room = r.parse().ok(),
+                ["items", i] => item = i.parse().ok(),
+                _ => {}
+            }
+        }
+        Some((room?, item?))
+    }
+}
+
 /// Well-known room variable ids (`GET /api/v1/items/:roomId/variables`).
 pub mod room_var {
     pub const CURRENT_SELECTED_DEVICE: u32 = 1000;

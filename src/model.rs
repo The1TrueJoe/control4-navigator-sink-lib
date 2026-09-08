@@ -209,6 +209,9 @@ pub struct Room {
     pub power_on: bool,
     #[serde(default)]
     pub now_playing: NowPlaying,
+    /// Item ids the user favorited for this room (from ui_configuration), in order.
+    #[serde(default)]
+    pub favorites: Vec<u32>,
 }
 
 impl Room {

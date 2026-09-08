@@ -12,7 +12,7 @@
 
 use crate::error::{Error, Result};
 use crate::model::{Device, Project, ProxyKind, Room};
-use crate::rest::{proxy_kind_from_str, room_var, Item, RoomInfo, Variable};
+use crate::rest::{proxy_kind_from_str, room_var, Favorite, Item, RoomInfo, Variable};
 use serde::de::DeserializeOwned;
 
 /// Something that can GET a controller API path and return parsed JSON.
@@ -52,28 +52,79 @@ pub fn load_project(src: &dyn ProjectSource) -> Result<Project> {
             Room { id: r.id, name: r.name, floor: r.floor_name, ..Default::default() },
         );
     }
+    // Each real device appears twice: a "(Universal)" lua_gen minidriver wrapper and
+    // the proxy instance. Drop the wrappers, then dedup same-name pairs preferring
+    // the proxy (non-lua_gen) item — so the grid shows one clean, friendly name.
+    let mut devs: Vec<(Device, bool)> = Vec::new(); // (device, is_lua_gen)
     for it in items {
         if !it.is_device() {
             continue;
         }
-        let dev = Device {
-            id: it.id,
-            name: it.name.clone(),
-            proxy: it
-                .proxy
-                .as_deref()
-                .map(proxy_kind_from_str)
-                .unwrap_or_else(|| ProxyKind::Other(String::new())),
-            room_id: it.room_id.or(it.parent_id),
-            props: Default::default(),
-        };
-        // Devices live under their room; parentId is the room for room-scoped items.
+        if it.name.trim_end().ends_with("(Universal)") {
+            continue;
+        }
+        let is_lua = it.control.as_deref() == Some("lua_gen");
+        devs.push((
+            Device {
+                id: it.id,
+                name: it.name.clone(),
+                proxy: it
+                    .proxy
+                    .as_deref()
+                    .map(proxy_kind_from_str)
+                    .unwrap_or_else(|| ProxyKind::Other(String::new())),
+                room_id: it.room_id.or(it.parent_id),
+                props: Default::default(),
+            },
+            is_lua,
+        ));
+    }
+    // dedup by (room, lowercased name): keep the non-lua_gen when they collide
+    let mut chosen: std::collections::HashMap<(Option<u32>, String), usize> = Default::default();
+    let mut keep = vec![true; devs.len()];
+    for idx in 0..devs.len() {
+        let key = (devs[idx].0.room_id, devs[idx].0.name.to_lowercase());
+        match chosen.get(&key).copied() {
+            Some(prev) => {
+                if devs[prev].1 && !devs[idx].1 {
+                    keep[prev] = false;
+                    chosen.insert(key, idx);
+                } else {
+                    keep[idx] = false;
+                }
+            }
+            None => {
+                chosen.insert(key, idx);
+            }
+        }
+    }
+    for (idx, (dev, _)) in devs.into_iter().enumerate() {
+        if !keep[idx] {
+            continue;
+        }
         match dev.room_id.and_then(|rid| project.rooms.get_mut(&rid)) {
             Some(room) => {
                 room.devices.insert(dev.id, dev);
             }
             None => {
                 project.devices.insert(dev.id, dev);
+            }
+        }
+    }
+
+    // Favorites (best-effort — endpoint may be absent on some controllers).
+    if let Ok(v) = src.get_json("/api/v1/agents/ui_configuration/favorites/") {
+        if let Some(arr) = v.get("favorites").and_then(|f| f.as_array()) {
+            for fv in arr {
+                if let Ok(fav) = serde_json::from_value::<Favorite>(fv.clone()) {
+                    if let Some((room_id, item_id)) = fav.as_item() {
+                        if let Some(r) = project.rooms.get_mut(&room_id) {
+                            if !r.favorites.contains(&item_id) {
+                                r.favorites.push(item_id);
+                            }
+                        }
+                    }
+                }
             }
         }
     }

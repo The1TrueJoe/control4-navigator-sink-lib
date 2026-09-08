@@ -58,7 +58,7 @@ pub use model::{
     ProxyKind, Room,
 };
 pub use protocol::{Event, Frame, NavKey, Params};
-pub use rest::{Item, Location, ProxyMeta, RoomInfo, Variable};
+pub use rest::{Favorite, Item, Location, ProxyMeta, RoomInfo, Variable};
 pub use sink::read_events;
 
 #[cfg(feature = "sink")]

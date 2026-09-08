@@ -24,6 +24,9 @@ impl ProjectSource for MockSource {
             // item-detail.json is a one-element array of a device (id 15, room 14).
             "/api/v1/items?tree=false" => fixture("item-detail.json"),
             "/api/v1/items/14/variables" => fixture("room14-variables.json"),
+            "/api/v1/agents/ui_configuration/favorites/" => serde_json::json!({
+                "favorites": [{ "path": "/v1/rooms/14/items/15", "menu": "watch", "locationId": 14 }]
+            }),
             other => panic!("unexpected path {other}"),
         })
     }
