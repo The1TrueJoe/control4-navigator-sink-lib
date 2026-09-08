@@ -11,8 +11,8 @@
 //! "Refresh Navigators" and project edits are always reflected.
 
 use crate::error::{Error, Result};
-use crate::model::{Device, Project, ProxyKind, Room};
-use crate::rest::{proxy_kind_from_str, room_var, Favorite, Item, RoomInfo, Variable};
+use crate::model::{Device, Project, ProxyKind, Room, Source};
+use crate::rest::{proxy_kind_from_str, room_var, Favorite, Item, RoomInfo, RoomMedia, Variable};
 use serde::de::DeserializeOwned;
 
 /// Something that can GET a controller API path and return parsed JSON.
@@ -112,6 +112,21 @@ pub fn load_project(src: &dyn ProjectSource) -> Result<Project> {
         }
     }
 
+    // Watch/Listen sources, per room, straight from the controller's own navigator
+    // lists (`/rooms/:id/media`). This is authoritative — correct names, correct
+    // menu split, and the user's hidden-source choices — so we don't guess A/V
+    // menus from proxy types. Best-effort per room; a failure leaves that room's
+    // lists empty rather than failing the whole sync.
+    let room_ids: Vec<u32> = project.rooms.keys().copied().collect();
+    for rid in room_ids {
+        if let Ok(media) = load_room_media(src, rid) {
+            if let Some(room) = project.rooms.get_mut(&rid) {
+                room.watch = sources_from(media.watch_devices.visible);
+                room.listen = sources_from(media.listen_devices.visible);
+            }
+        }
+    }
+
     // Favorites (best-effort — endpoint may be absent on some controllers).
     if let Ok(v) = src.get_json("/api/v1/agents/ui_configuration/favorites/") {
         if let Some(arr) = v.get("favorites").and_then(|f| f.as_array()) {
@@ -129,6 +144,33 @@ pub fn load_project(src: &dyn ProjectSource) -> Result<Project> {
         }
     }
     Ok(project)
+}
+
+/// Fetch a room's Watch/Listen source lists (`/api/v1/rooms/:id/media`).
+pub fn load_room_media(src: &dyn ProjectSource, room_id: u32) -> Result<RoomMedia> {
+    get(src, &format!("/api/v1/rooms/{room_id}/media"))
+}
+
+/// Convert controller media entries into model [`Source`]s: drop special entries
+/// with non-positive ids (e.g. `[Zones]` `-998`, `[Now Playing]` `-997`) and
+/// dedup by id, preserving the controller's order.
+fn sources_from(entries: Vec<crate::rest::MediaSource>) -> Vec<Source> {
+    let mut seen = std::collections::HashSet::new();
+    entries
+        .into_iter()
+        .filter_map(|m| {
+            let id = u32::try_from(m.id).ok().filter(|&id| id > 0)?;
+            if !seen.insert(id) {
+                return None;
+            }
+            Some(Source {
+                id,
+                audio_video: m.is_audio_video(),
+                name: m.name,
+                kind: m.kind.unwrap_or_default(),
+            })
+        })
+        .collect()
 }
 
 /// Fetch one item's variables (`/api/v1/items/:id/variables`) — the live-state bus.

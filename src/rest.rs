@@ -158,6 +158,57 @@ impl Variable {
     }
 }
 
+/// One selectable source in `GET /api/v1/rooms/:id/media` — an entry in a room's
+/// Watch or Listen list, exactly as Control4's own navigator shows it. `id` can be
+/// negative for special audio entries (`-998` `[Zones]`, `-997` `[Now Playing]`).
+/// `kind` is the source type: `HDMI`, `RF_MINI_APP` (a "mini app" like Netflix),
+/// `STEREO`, `DIGITAL_AUDIO_SERVER`, `COMPONENT`, `VIDEO_SELECTION`, …
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MediaSource {
+    pub id: i64,
+    #[serde(default)]
+    pub name: String,
+    #[serde(rename = "type", default)]
+    pub kind: Option<String>,
+    #[serde(default)]
+    pub category: Vec<String>,
+    #[serde(default)]
+    pub room_id: Option<u32>,
+    #[serde(default)]
+    pub room_name: Option<String>,
+}
+
+impl MediaSource {
+    /// A real A/V source (vs a `user_interface` shortcut like a UI Button).
+    pub fn is_audio_video(&self) -> bool {
+        self.category.iter().any(|c| c == "audio_video")
+    }
+}
+
+/// A `visible`/`hidden` pair of sources.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MediaList {
+    #[serde(default)]
+    pub visible: Vec<MediaSource>,
+    #[serde(default)]
+    pub hidden: Vec<MediaSource>,
+}
+
+/// `GET /api/v1/rooms/:id/media` — a room's Watch and Listen source lists. This is
+/// the authoritative source for the Watch/Listen menus (correct names, correct
+/// menu split, and the user's hidden-source choices), rather than guessing from a
+/// device's proxy type.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RoomMedia {
+    // The controller emits these top-level keys in snake_case (unlike most of the
+    // API), so no `rename_all` here.
+    #[serde(default)]
+    pub watch_devices: MediaList,
+    #[serde(default)]
+    pub listen_devices: MediaList,
+}
+
 /// A favorite from `GET /api/v1/agents/ui_configuration/favorites/`. `path` is
 /// either a menu (`/v1/rooms/14/watch`) or a pinned item (`/v1/rooms/14/items/475`).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -213,7 +264,7 @@ pub fn proxy_kind_from_str(p: &str) -> ProxyKind {
     use ProxyKind::*;
     match p {
         "controller" => Controller,
-        "uidevice" => UiDevice,
+        "uidevice" | "ui_device" => UiDevice,
         "room" => Room,
         "tv" => Tv,
         "receiver" => Receiver,
@@ -221,8 +272,10 @@ pub fn proxy_kind_from_str(p: &str) -> ProxyKind {
         "cable" | "rf_cable" => Cable,
         "satellite" => Satellite,
         "media_service" => MediaService,
+        "media_player" => MediaPlayer,
+        "tuner" => Tuner,
         "amplifier" => Amplifier,
-        "avswitch" => AvSwitch,
+        "avswitch" | "av_switch" => AvSwitch,
         "light" | "light_v2" => Light,
         "thermostat" | "thermostatV2" => Thermostat,
         "lock" => Lock,

@@ -134,6 +134,8 @@ pub enum ProxyKind {
     Cable,
     Satellite,
     MediaService,
+    MediaPlayer,
+    Tuner,
     Amplifier,
     AvSwitch,
     Light,
@@ -176,6 +178,23 @@ pub struct Device {
     pub props: BTreeMap<String, String>,
 }
 
+/// A selectable A/V source in a room's Watch or Listen list, as Control4's own
+/// navigator presents it (from `GET /api/v1/rooms/:id/media`). Unlike [`Device`],
+/// a source is not 1:1 with a proxy — it can be a mini-app, an HDMI input, a
+/// distributed-audio server, or a special entry — so it carries Control4's own
+/// `kind` string rather than a [`ProxyKind`].
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Source {
+    pub id: u32,
+    pub name: String,
+    /// Control4 source type: `HDMI`, `RF_MINI_APP`, `STEREO`,
+    /// `DIGITAL_AUDIO_SERVER`, `COMPONENT`, `VIDEO_SELECTION`, …
+    pub kind: String,
+    /// True for a real A/V source; false for a `user_interface` shortcut.
+    #[serde(default)]
+    pub audio_video: bool,
+}
+
 /// What is currently playing / selected in a room.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NowPlaying {
@@ -194,9 +213,17 @@ pub struct Room {
     pub name: String,
     #[serde(default)]
     pub floor: Option<String>,
-    /// Devices selectable/controllable in this room, grouped by menu.
+    /// Devices selectable/controllable in this room, grouped by menu. Used for the
+    /// non-A/V menus (Lighting, Comfort, Security, Shades, Cameras) and to resolve
+    /// the name of the currently-selected source.
     #[serde(default)]
     pub devices: BTreeMap<u32, Device>,
+    /// The room's Watch sources, in the controller's own order (from `/rooms/:id/media`).
+    #[serde(default)]
+    pub watch: Vec<Source>,
+    /// The room's Listen sources, in the controller's own order (from `/rooms/:id/media`).
+    #[serde(default)]
+    pub listen: Vec<Source>,
     #[serde(default)]
     pub current_video_device: Option<u32>,
     #[serde(default)]
@@ -218,6 +245,17 @@ impl Room {
     /// Devices that belong under a given navigator menu.
     pub fn devices_in(&self, menu: Menu) -> impl Iterator<Item = &Device> {
         self.devices.values().filter(move |d| menu_for_proxy(&d.proxy) == Some(menu))
+    }
+
+    /// Resolve a selected/now-playing id to a display name, checking Watch and
+    /// Listen sources first, then room devices.
+    pub fn name_of(&self, id: u32) -> Option<&str> {
+        self.watch
+            .iter()
+            .chain(self.listen.iter())
+            .find(|s| s.id == id)
+            .map(|s| s.name.as_str())
+            .or_else(|| self.devices.get(&id).map(|d| d.name.as_str()))
     }
 }
 

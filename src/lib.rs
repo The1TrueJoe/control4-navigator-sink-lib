@@ -52,13 +52,17 @@ pub mod rest;
 pub mod sink;
 
 pub use error::{Error, Result};
-pub use loader::{apply_room_variables, load_project, load_room_variables, ProjectSource};
+pub use loader::{
+    apply_room_variables, load_project, load_room_media, load_room_variables, ProjectSource,
+};
 pub use model::{
     menu_for_proxy, BindingInfo, Device, Menu, NavigatorState, NowPlaying, PopupState, Project,
-    ProxyKind, Room,
+    ProxyKind, Room, Source,
 };
 pub use protocol::{Event, Frame, NavKey, Params};
-pub use rest::{Favorite, Item, Location, ProxyMeta, RoomInfo, Variable};
+pub use rest::{
+    Favorite, Item, Location, MediaList, MediaSource, ProxyMeta, RoomInfo, RoomMedia, Variable,
+};
 pub use sink::read_events;
 
 #[cfg(feature = "sink")]

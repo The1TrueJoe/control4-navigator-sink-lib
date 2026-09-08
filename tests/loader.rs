@@ -27,6 +27,25 @@ impl ProjectSource for MockSource {
             "/api/v1/agents/ui_configuration/favorites/" => serde_json::json!({
                 "favorites": [{ "path": "/v1/rooms/14/items/15", "menu": "watch", "locationId": 14 }]
             }),
+            "/api/v1/rooms/14/media" => serde_json::json!({
+                "watch_devices": {
+                    "visible": [
+                        { "id": 333, "type": "RF_MINI_APP", "name": "Netflix", "category": ["audio_video"] },
+                        { "id": 333, "type": "RF_MINI_APP", "name": "Netflix (dup id)", "category": ["audio_video"] },
+                        { "id": 210, "type": "VIDEO_SELECTION", "name": "Samsung TV", "category": ["audio_video"] }
+                    ],
+                    "hidden": [
+                        { "id": 999, "type": "HDMI", "name": "Should be hidden", "category": ["audio_video"] }
+                    ]
+                },
+                "listen_devices": {
+                    "visible": [
+                        { "id": -997, "type": "SPECIAL_AUDIO", "name": "[Now Playing]" },
+                        { "id": 540, "type": "STEREO", "name": "Tuner", "category": ["audio_video"] }
+                    ]
+                }
+            }),
+            "/api/v1/rooms/31/media" => serde_json::json!({}),
             other => panic!("unexpected path {other}"),
         })
     }
@@ -42,6 +61,24 @@ fn builds_project_and_places_devices() {
     let room = &project.rooms[&14];
     let dev = room.devices.get(&15).expect("device 15 in room 14");
     assert_eq!(dev.proxy, ProxyKind::Controller);
+}
+
+#[test]
+fn loads_room_media_into_watch_and_listen() {
+    let project = load_project(&MockSource).unwrap();
+    let room = &project.rooms[&14];
+    // watch: dup id collapsed, hidden dropped -> Netflix(333) + Samsung TV(210).
+    let watch: Vec<_> = room.watch.iter().map(|s| (s.id, s.name.as_str())).collect();
+    assert_eq!(watch, vec![(333, "Netflix"), (210, "Samsung TV")]);
+    assert!(room.watch.iter().all(|s| s.audio_video));
+    // listen: special negative-id entry dropped -> just Tuner(540).
+    let listen: Vec<_> = room.listen.iter().map(|s| s.id).collect();
+    assert_eq!(listen, vec![540]);
+    // name resolution spans sources.
+    assert_eq!(room.name_of(333), Some("Netflix"));
+    assert_eq!(room.name_of(540), Some("Tuner"));
+    // room 31 served no media -> empty lists (best-effort, no panic).
+    assert!(project.rooms[&31].watch.is_empty());
 }
 
 #[test]
