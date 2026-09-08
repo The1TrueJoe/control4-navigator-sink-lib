@@ -45,6 +45,27 @@ pub fn load_project(src: &dyn ProjectSource) -> Result<Project> {
         })
         .unwrap_or_default();
 
+    // Item id -> navigator icon path, parsed from the raw values (the typed `Item`
+    // doesn't carry `capabilities`). One pass covers every device and A/V source.
+    let mut icon_by_id: std::collections::HashMap<u32, String> = Default::default();
+    if let Some(arr) = items_val.as_array() {
+        for v in arr {
+            if let (Some(id), Some(icon)) = (v.get("id").and_then(|x| x.as_u64()), icon_from_item(v))
+            {
+                icon_by_id.insert(id as u32, icon);
+            }
+        }
+    }
+    // A lighting load appears twice: a lua_gen manufacturer device (the parent, with
+    // a hardware name like "ZWave Dimmer") and its light proxy child (the friendly
+    // name like "Pendants"). Drop the wrapper — a lua_gen light that is the parent of
+    // another light — and keep the child, so the grid shows the friendly name.
+    let light_parents: std::collections::HashSet<u32> = items
+        .iter()
+        .filter(|it| matches!(it.proxy.as_deref(), Some("light") | Some("light_v2")))
+        .filter_map(|it| it.parent_id)
+        .collect();
+
     let mut project = Project::default();
     for r in rooms {
         project.rooms.insert(
@@ -64,6 +85,13 @@ pub fn load_project(src: &dyn ProjectSource) -> Result<Project> {
             continue;
         }
         let is_lua = it.control.as_deref() == Some("lua_gen");
+        // Drop the manufacturer wrapper of a light load (its proxy child is kept).
+        if is_lua
+            && matches!(it.proxy.as_deref(), Some("light") | Some("light_v2"))
+            && light_parents.contains(&it.id)
+        {
+            continue;
+        }
         devs.push((
             Device {
                 id: it.id,
@@ -74,6 +102,7 @@ pub fn load_project(src: &dyn ProjectSource) -> Result<Project> {
                     .map(proxy_kind_from_str)
                     .unwrap_or_else(|| ProxyKind::Other(String::new())),
                 room_id: it.room_id.or(it.parent_id),
+                icon: icon_by_id.get(&it.id).cloned(),
                 props: Default::default(),
             },
             is_lua,
@@ -121,8 +150,8 @@ pub fn load_project(src: &dyn ProjectSource) -> Result<Project> {
     for rid in room_ids {
         if let Ok(media) = load_room_media(src, rid) {
             if let Some(room) = project.rooms.get_mut(&rid) {
-                room.watch = sources_from(media.watch_devices.visible);
-                room.listen = sources_from(media.listen_devices.visible);
+                room.watch = sources_from(media.watch_devices.visible, &icon_by_id);
+                room.listen = sources_from(media.listen_devices.visible, &icon_by_id);
             }
         }
     }
@@ -154,7 +183,10 @@ pub fn load_room_media(src: &dyn ProjectSource, room_id: u32) -> Result<RoomMedi
 /// Convert controller media entries into model [`Source`]s: drop special entries
 /// with non-positive ids (e.g. `[Zones]` `-998`, `[Now Playing]` `-997`) and
 /// dedup by id, preserving the controller's order.
-fn sources_from(entries: Vec<crate::rest::MediaSource>) -> Vec<Source> {
+fn sources_from(
+    entries: Vec<crate::rest::MediaSource>,
+    icons: &std::collections::HashMap<u32, String>,
+) -> Vec<Source> {
     let mut seen = std::collections::HashSet::new();
     entries
         .into_iter()
@@ -168,9 +200,66 @@ fn sources_from(entries: Vec<crate::rest::MediaSource>) -> Vec<Source> {
                 audio_video: m.is_audio_video(),
                 name: m.name,
                 kind: m.kind.unwrap_or_default(),
+                icon: icons.get(&id).cloned(),
             })
         })
         .collect()
+}
+
+/// Extract a navigator icon path from a raw item's
+/// `capabilities.navigator_display_option.display_icons.Icon[]`. Picks the
+/// smallest icon at least 200px wide (crisp on a tile without being huge), else the
+/// largest available, and strips the `controller://` scheme so it can be served
+/// through an icon proxy. `None` if the item ships no navigator icon.
+fn icon_from_item(v: &serde_json::Value) -> Option<String> {
+    let icons = v
+        .get("capabilities")?
+        .get("navigator_display_option")?
+        .get("display_icons")?
+        .get("Icon")?;
+    let list: Vec<&serde_json::Value> = match icons {
+        serde_json::Value::Array(a) => a.iter().collect(),
+        obj @ serde_json::Value::Object(_) => vec![obj],
+        _ => return None,
+    };
+    let mut best: Option<(i64, &str)> = None; // smallest width >= 200
+    let mut largest: Option<(i64, &str)> = None;
+    for ic in list {
+        let Some(url) = ic.get("$t").and_then(|t| t.as_str()) else { continue };
+        let w = ic.get("width").and_then(|x| x.as_i64()).unwrap_or(0);
+        if largest.map_or(true, |(lw, _)| w > lw) {
+            largest = Some((w, url));
+        }
+        if w >= 200 && best.map_or(true, |(bw, _)| w < bw) {
+            best = Some((w, url));
+        }
+    }
+    let url = best.or(largest).map(|(_, u)| u)?;
+    Some(url.strip_prefix("controller://").unwrap_or(url).to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::icon_from_item;
+
+    #[test]
+    fn picks_smallest_icon_over_200_and_strips_scheme() {
+        // Real Netflix shape (Icon array of {height,width,$t}).
+        let item = serde_json::json!({
+            "capabilities": { "navigator_display_option": { "type": "xml", "display_icons": { "Icon": [
+                { "height": 1024, "width": 1024, "$t": "controller://driver/um_netflix/icons/device/experience_1024.png" },
+                { "height": 300, "width": 300, "$t": "controller://driver/um_netflix/icons/device/experience_300.png" },
+                { "height": 90, "width": 90, "$t": "controller://driver/um_netflix/icons/device/experience_90.png" }
+            ]}}}
+        });
+        assert_eq!(
+            icon_from_item(&item).as_deref(),
+            Some("driver/um_netflix/icons/device/experience_300.png")
+        );
+        // No navigator icon -> None; empty capabilities -> None.
+        assert_eq!(icon_from_item(&serde_json::json!({ "capabilities": "" })), None);
+        assert_eq!(icon_from_item(&serde_json::json!({})), None);
+    }
 }
 
 /// Fetch one item's variables (`/api/v1/items/:id/variables`) — the live-state bus.

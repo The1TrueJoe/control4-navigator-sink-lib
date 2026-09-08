@@ -172,6 +172,11 @@ pub struct Device {
     /// Room this device lives in, if room-scoped.
     #[serde(default)]
     pub room_id: Option<u32>,
+    /// Controller-relative path to the device's navigator icon (no `controller://`
+    /// prefix), e.g. `driver/um_netflix/icons/device/experience_300.png`. Serve it
+    /// through the app's icon proxy. `None` if the driver ships no navigator icon.
+    #[serde(default)]
+    pub icon: Option<String>,
     /// Free-form capability flags/props learned from the project (e.g.
     /// `has_discrete_volume`, `is_video_source`).
     #[serde(default)]
@@ -193,6 +198,10 @@ pub struct Source {
     /// True for a real A/V source; false for a `user_interface` shortcut.
     #[serde(default)]
     pub audio_video: bool,
+    /// Controller-relative navigator icon path (see [`Device::icon`]), matched to
+    /// the source by item id. `None` if the driver ships no icon.
+    #[serde(default)]
+    pub icon: Option<String>,
 }
 
 /// What is currently playing / selected in a room. `title`/`artist`/`album`/
