@@ -45,12 +45,14 @@
 //! ```
 
 pub mod error;
+pub mod loader;
 pub mod model;
 pub mod protocol;
 pub mod rest;
 pub mod sink;
 
 pub use error::{Error, Result};
+pub use loader::{apply_room_variables, load_project, load_room_variables, ProjectSource};
 pub use model::{
     menu_for_proxy, BindingInfo, Device, Menu, NavigatorState, NowPlaying, PopupState, Project,
     ProxyKind, Room,
