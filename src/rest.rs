@@ -59,7 +59,11 @@ pub struct RoomInfo {
 pub struct ProxyMeta {
     #[serde(default)]
     pub proxybindingid: Option<u32>,
-    pub proxy: String,
+    /// Optional: some `proxyMeta` entries omit `proxy` (e.g. a light load's
+    /// composer-sourced icon meta). Kept optional so one such entry doesn't fail
+    /// the whole item's parse and silently drop the device.
+    #[serde(default)]
+    pub proxy: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]

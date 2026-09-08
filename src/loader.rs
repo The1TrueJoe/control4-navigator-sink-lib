@@ -260,6 +260,20 @@ mod tests {
         assert_eq!(icon_from_item(&serde_json::json!({ "capabilities": "" })), None);
         assert_eq!(icon_from_item(&serde_json::json!({})), None);
     }
+
+    #[test]
+    fn item_parses_when_proxymeta_lacks_proxy() {
+        // Real Hue light child: its proxyMeta entry has no `proxy` key. Must still
+        // parse (else the device is silently dropped and its wrapper survives).
+        let v = serde_json::json!({
+            "id": 1239, "name": "Left Lamp", "type": 7, "typeName": "device",
+            "proxy": "light_v2", "control": "light_v2", "parentId": 1238, "roomId": 373,
+            "proxyMeta": [{ "name": "light_v2", "smallImage": "devices_sm/dimmer.gif" }]
+        });
+        let it: crate::rest::Item = serde_json::from_value(v).expect("item parses");
+        assert_eq!(it.name, "Left Lamp");
+        assert_eq!(it.proxy.as_deref(), Some("light_v2"));
+    }
 }
 
 /// Fetch one item's variables (`/api/v1/items/:id/variables`) — the live-state bus.

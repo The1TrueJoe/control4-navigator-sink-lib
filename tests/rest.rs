@@ -41,7 +41,7 @@ fn item_detail_deserializes() {
     assert!(it.is_device());
     assert_eq!(it.proxy_kind(), Some(ProxyKind::Controller));
     // EA-3 presents controller + uidevice.
-    assert!(it.proxy_meta.iter().any(|p| p.proxy == "uidevice"));
+    assert!(it.proxy_meta.iter().any(|p| p.proxy.as_deref() == Some("uidevice")));
     assert!(it.categories.iter().any(|c| c == "controllers"));
 }
 
