@@ -1,0 +1,572 @@
+[
+ {
+  "id": 14,
+  "varName": "CURRENT_SELECTED_DEVICE",
+  "type": "Device",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1000,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "CURRENT_AUDIO_DEVICE",
+  "type": "Number",
+  "hidden": 1,
+  "value": 0,
+  "variableId": 1001,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "CURRENT_VIDEO_DEVICE",
+  "type": "Number",
+  "hidden": 1,
+  "value": 0,
+  "variableId": 1002,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "AUDIO_VOLUME_DEVICE",
+  "type": "Number",
+  "hidden": 1,
+  "value": 0,
+  "variableId": 1003,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "VIDEO_VOLUME_DEVICE",
+  "type": "Number",
+  "hidden": 1,
+  "value": 0,
+  "variableId": 1004,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "CURRENT_MEDIA",
+  "type": "Media",
+  "hidden": 1,
+  "value": "",
+  "variableId": 1005,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "CURRENT_AUDIO_PATH",
+  "type": "String",
+  "hidden": 1,
+  "value": "",
+  "variableId": 1007,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "CURRENT_VIDEO_PATH",
+  "type": "String",
+  "hidden": 1,
+  "value": "",
+  "variableId": 1008,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "CURRENT_VIDEO_AUDIO_PATH",
+  "type": "String",
+  "hidden": 1,
+  "value": "",
+  "variableId": 1009,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "POWER_STATE",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1010,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "CURRENT_VOLUME",
+  "type": "Number",
+  "hidden": 0,
+  "value": -1,
+  "variableId": 1011,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "TEMPERATURE_ID",
+  "type": "Number",
+  "hidden": 1,
+  "value": 0,
+  "variableId": 1012,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "TEMPERATURE_CONTROL_ID",
+  "type": "Number",
+  "hidden": 1,
+  "value": 0,
+  "variableId": 1013,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "SECURITY_SYSTEM_ID",
+  "type": "Number",
+  "hidden": 1,
+  "value": 0,
+  "variableId": 1014,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "CURRENT_VOLUME_DEVICE_ID",
+  "type": "Number",
+  "hidden": 1,
+  "value": 0,
+  "variableId": 1015,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "HAS_DISCRETE_VOLUME",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1016,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "HAS_DISCRETE_MUTE",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1017,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "IS_MUTED",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1018,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "IN_NAVIGATION",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1019,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "USE_DEFAULT_VOLUMES",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": false,
+  "variableId": 1020,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "DEFAULT_AUDIO_VOLUME",
+  "type": "Number",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1021,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "DEFAULT_VIDEO_VOLUME",
+  "type": "Number",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1022,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "VOLUME_IS_LINKED",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1023,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "MUTE_IS_LINKED",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1025,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "ROOMOFF_IS_LINKED",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1026,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "LINKED_ROOM_LIST",
+  "type": "String",
+  "hidden": 1,
+  "value": "",
+  "variableId": 1024,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "SELECTIONS_LINKED",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1027,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "CURRENT_LINKED_MEDIA_SCENE",
+  "type": "String",
+  "hidden": 1,
+  "value": "",
+  "variableId": 1028,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "ROOM_HIDDEN",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1029,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "MEDIA_SCENE_ACTIVE",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1030,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "CURRENT MEDIA INFO",
+  "type": "XML",
+  "hidden": 0,
+  "value": "",
+  "variableId": 1031,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "LAST_DEVICE_GROUP",
+  "type": "String",
+  "hidden": 1,
+  "value": "",
+  "variableId": 1032,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "AVAILABLE_CAMERAS",
+  "type": "String",
+  "hidden": 1,
+  "value": "",
+  "variableId": 1033,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "POOLS",
+  "type": "String",
+  "hidden": 1,
+  "value": "",
+  "variableId": 1034,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "SCENE_IS_DISCRETE_VOLUME",
+  "type": "String",
+  "hidden": 1,
+  "value": "",
+  "variableId": 1035,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "PLAYING_AUDIO_DEVICE",
+  "type": "Device",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1036,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "ANNOUNCEMENT_DISABLED",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1037,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "CURRENT_VIDEO_AUDIO_DEVICE",
+  "type": "Number",
+  "hidden": 1,
+  "value": 0,
+  "variableId": 1038,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_IS_HIDDEN",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1039,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_AUDIO_MODE",
+  "type": "String",
+  "hidden": 0,
+  "value": "",
+  "variableId": 1040,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_HAS_LOUDNESS_CONTROL",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1041,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_LOUDNESS_ON",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1042,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_HAS_TONE_CONTROL",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1043,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_BASS_LEVEL",
+  "type": "Number",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1044,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_TREBLE_LEVEL",
+  "type": "Number",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1045,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_TONE_LOWER_LIMIT",
+  "type": "Number",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1046,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_TONE_UPPER_LIMIT",
+  "type": "Number",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1047,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_HAS_EQ_CONTROL",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1048,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_BAND_COUNT",
+  "type": "Number",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1049,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_BAND_LOWER_LIMIT",
+  "type": "Number",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1050,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_BAND_UPPER_LIMIT",
+  "type": "Number",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1051,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_BAND_FREQ_VALUES",
+  "type": "String",
+  "hidden": 0,
+  "value": "",
+  "variableId": 1052,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_BAND_GAIN_VALUES",
+  "type": "String",
+  "hidden": 0,
+  "value": "",
+  "variableId": 1053,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_PRESET_LIST",
+  "type": "String",
+  "hidden": 1,
+  "value": "",
+  "variableId": 1054,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "EQ_SELECTED_PRESET",
+  "type": "String",
+  "hidden": 1,
+  "value": "",
+  "variableId": 1055,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "MEDIA WALL INFO",
+  "type": "XML",
+  "hidden": 0,
+  "value": "",
+  "variableId": 1056,
+  "name": "Room",
+  "roomName": "Room"
+ },
+ {
+  "id": 14,
+  "varName": "MW_MINIAPPNOPASSMODE",
+  "type": "Boolean",
+  "hidden": 0,
+  "value": 0,
+  "variableId": 1057,
+  "name": "Room",
+  "roomName": "Room"
+ }
+]

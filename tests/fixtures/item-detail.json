@@ -1,0 +1,52 @@
+[
+    {
+        "type": 6,
+        "typeName": "device",
+        "name": "Control4 EA-3",
+        "parentId": 14,
+        "id": 15,
+        "proxy": "controller",
+        "proxyMeta": [
+            {
+                "name": "EA-3",
+                "proxybindingid": 5001,
+                "smallSource": "composer",
+                "smallImage": "devices_sm/control4_ea3_sm.png",
+                "largeSource": "composer",
+                "largeImage": "devices_lg/control4_ea3_lg.png",
+                "proxy": "controller"
+            },
+            {
+                "proxybindingid": 5002,
+                "proxy": "uidevice"
+            }
+        ],
+        "categories": [
+            "controllers",
+            "user_interface"
+        ],
+        "siteId": 11,
+        "siteName": "Home",
+        "buildingId": 12,
+        "buildingName": "House",
+        "floorId": 13,
+        "floorName": "Main",
+        "roomId": 14,
+        "roomName": "Room",
+        "filename": "control4_ea3.c4i",
+        "protocolId": 15,
+        "control": "control4_ea3",
+        "version": 34,
+        "modified": null,
+        "model": "C4-EA3",
+        "manufacturer": "Control4",
+        "allControlBindingsHidden": 0,
+        "isOnline": true,
+        "URIs": {
+            "network": "/api/v1/items/15/network",
+            "bindings": "/api/v1/items/15/bindings",
+            "commands": "/api/v1/items/15/commands",
+            "zigbee": "/api/v1/items/15/zigbee"
+        }
+    }
+]

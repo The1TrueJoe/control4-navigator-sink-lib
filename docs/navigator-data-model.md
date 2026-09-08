@@ -35,11 +35,24 @@ Missing: the full room/device catalog and per-device state. **Fold with
 `NavigatorState::apply`.**
 
 ### b. Controller REST API `/api/v1/…` (HTTPS 443, JWT) — recommended for structure
-The controller exposes a REST API; the jailbreak uses `GET /api/v1/items` (Bearer
-JWT) to enumerate project items/devices, and `/api/v1/sysman/…` for system ops.
-This is the cleanest **structured** source for rooms + devices + capabilities.
-Plan: fetch `items` once to build [`Project`], then refresh on change.
-_TODO: confirm the exact endpoints for room state / variables / now-playing._
+**Confirmed against a live EA-3** (OS 3.3.3) — see the captured schemas in the
+openHC research (`c4-recon/research/api/DATA-MODEL.md`) and the typed structs in
+[`src/rest.rs`](../src/rest.rs). Served by the `broker` node app.
+
+- `GET /api/v1/locations` — location tree (site 2 / building 3 / floor 4 / room 8) → [`Location`]
+- `GET /api/v1/rooms` — flat room list → [`RoomInfo`]
+- `GET /api/v1/items` / `GET /api/v1/items/:id` — devices + agents (proxy, proxyMeta,
+  categories, roomId, control/filename) → [`Item`]
+- `GET /api/v1/items/:id/variables` — **live state bus** → [`Variable`] (room vars:
+  1000 CURRENT_SELECTED_DEVICE, 1010 POWER_STATE, 1011 CURRENT_VOLUME, 1018 IS_MUTED,
+  1019 IN_NAVIGATION, …; device vars per proxy)
+- `GET /api/v1/items/:id/commands`, `/api/v1/agents`, `/api/v1/drivers`
+
+**Auth:** Bearer JWT. Mint via `POST /api/v1/localjwt` presenting a trusted
+Composer **client cert** to nginx:443 (`ssl_verify_client optional`), or on-box by
+POSTing to `127.0.0.1:3000/api/v1/localjwt` with `X-SSL-CERT-VERIFY: SUCCESS` +
+`X-SSL-CERT-CLIENT_S_DN: CN=Composer_…`. Open (no token): `locations`, `agents`,
+`status`, `routes`, `common_name`. Live push: `/api/v1/subscriptions` + `/ws/token`.
 
 ### c. Project backup `.c4p` → `project.xml` (full, static, offline)
 The whole project: rooms, devices, drivers, every connection/binding. Perfect for
@@ -97,3 +110,7 @@ core (nav path) stays small and proven; this is the clear next milestone.
 [`NowPlaying`]: ../src/model.rs
 [`NavigatorState`]: ../src/model.rs
 [`Event`]: ../src/protocol.rs
+[`Location`]: ../src/rest.rs
+[`RoomInfo`]: ../src/rest.rs
+[`Item`]: ../src/rest.rs
+[`Variable`]: ../src/rest.rs
