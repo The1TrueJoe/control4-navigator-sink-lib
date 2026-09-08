@@ -68,7 +68,37 @@ Our DriverWorks driver can `C4:RegisterVariableListener(roomId, 1000)` / `1019` 
 volume, and `C4:GetProxyDevicesByName(...)`, then relay changes as new frames.
 This turns the driver into a live state feed without polling the REST API.
 
-## 3. Suggested representation & flow
+## 2.5. How a REAL navigator gets its data (generated + pushed, not preset)
+
+Important: a Control4 navigator does **not** load a static project snapshot. The
+**cerebellum** app (`/opt/control4/tr3/cerebellum`, port 3001) *renders* the UI from
+mustache templates in `filerepo/tr2/` against the live project, and **pushes** a live
+data document to the navigator. **"Refresh Navigators"** regenerates it — the
+`ui_configuration` agent logs *"Received Refresh Navigators - Cleared active state."*
+and re-renders/re-pushes. So the nav data is a **living, regenerating feed**.
+
+- **Screens** = `filerepo/tr2/gui/*.tpl.xml` (`main`, `proxies`, `popups`, `keypad`,
+  `header`, `directory`, `dynamicScreens`, …) — the static UI, rendered per project.
+- **Live data** = `guidata.tpl.xml` → an `<update>` doc, continuously pushed:
+  `version(projectId)`, `localTime/clockType`, `screenBrightness`, `favorites`,
+  `cachedValues`, `playerData` (now-playing), `tunerData`, `volumeInfo`,
+  `volumePopupVisibility`, `dynamicRoomInfo`, `homeActiveMedia`, `listContent`
+  (`updatedListItems`), `demoMode`. Mustache: `{{key}}`, `{{#section}}`, `{{{raw}}}`.
+- **cerebellum auth** is navigator-specific (our broker JWT is rejected): a nav
+  presents a **client cert** (`/etc/openvpn/client.pem`) and mints a token via
+  `POST /api/v1/ws/token`. A device with no nav identity can't yet talk to cerebellum.
+
+### Two intercompat strategies
+- **A — raw project, our own UI (recommended for "represent it our way"):** consume
+  broker `/api/v1` (`locations`/`rooms`/`items`/`variables` + `/subscriptions` push)
+  and render our own navigator. The API is always live, so "Refresh Navigators" never
+  leaves us stale — we just keep syncing. Version-independent; no tr2 XML coupling.
+- **B — true navigator emulation:** obtain a nav client cert + `ws/token`, consume
+  cerebellum's rendered `gui` + `guidata` `<update>` stream, and honor Refresh
+  Navigators. Truest intercompat, but couples us to the tr2/tr3 format and needs a
+  paired navigator identity.
+
+## 3. Suggested representation & flow (live-sync, not one-shot)
 
 ```
   .c4p/project.xml  ──▶ Project (rooms, devices)          [bootstrap, offline]
@@ -80,7 +110,10 @@ This turns the driver into a live state feed without polling the REST API.
         └────────────────────── relay `state` frames (room vars)  [future]
 ```
 
-- Build [`Project`] once from (b) or (c).
+- Build [`Project`] from (b)/(c) and **re-sync on change** — the API is the live
+  source of truth, never a cached preset. "Refresh Navigators" / project edits are
+  picked up by re-fetching `items`/`rooms` (cheap) or via `/subscriptions` push;
+  don't hold a stale snapshot.
 - Keep [`NavigatorState`] updated from the relay [`Event`]s.
 - Merge: e.g. on `SelectSource{room}` update `Room::now_playing.source_device`;
   on room-variable frames update volume/power/now-playing.
