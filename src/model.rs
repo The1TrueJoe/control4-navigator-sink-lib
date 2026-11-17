@@ -105,7 +105,10 @@ impl NavigatorState {
                 self.brightness = Some(*level);
                 true
             }
-            Event::SelectSource { .. } | Event::Query { .. } | Event::Other { .. } => false,
+            Event::SelectSource { .. }
+            | Event::Query { .. }
+            | Event::Auth { .. }
+            | Event::Other { .. } => false,
         }
     }
 

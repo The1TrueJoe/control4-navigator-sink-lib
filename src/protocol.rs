@@ -42,6 +42,15 @@ pub enum Frame {
         #[serde(default)]
         params: Params,
     },
+    /// A Director REST token the driver minted on the controller (sent on connect
+    /// and on every refresh), so the sink can read the project without its own
+    /// credentials. `host` is the API base (e.g. `https://10.0.0.107`); when absent
+    /// it is the address the driver connected from.
+    Auth {
+        token: String,
+        #[serde(default)]
+        host: Option<String>,
+    },
 }
 
 impl Frame {
@@ -186,6 +195,8 @@ pub enum Event {
     /// Director handshake/query we may want to answer (`GET_CONTROLLER_SETUP`,
     /// `GET_CONTROLLER_DISABLED`, `GET_WIFI_STRENGTH`, `PROXY_NAME`, …).
     Query { binding: u32, command: String, params: Params },
+    /// The driver handed over a Director REST token (see [`Frame::Auth`]).
+    Auth { token: String, host: Option<String> },
     /// Anything not specially recognized — still fully available.
     Other {
         binding: u32,
@@ -201,6 +212,7 @@ impl Event {
         match frame {
             Frame::Hello { message } => Event::Hello { message },
             Frame::Bind { binding, class, bound } => Event::Binding { binding, class, bound },
+            Frame::Auth { token, host } => Event::Auth { token, host },
             Frame::Command { binding, room, command, params } => {
                 // Enter navigation is encoded as "CONTROL4:<roomId>".
                 if let Some(rest) = command.strip_prefix("CONTROL4") {

@@ -94,3 +94,14 @@ fn round_trip_frame() {
     let f = Frame::Bind { binding: 5001, class: "CONTROLLER".into(), bound: true };
     assert_eq!(Frame::parse(&f.to_line()).unwrap(), f);
 }
+
+#[test]
+fn auth_frame() {
+    let f = Frame::parse(r#"{"type":"auth","token":"eyJ.x.y"}"#).unwrap();
+    assert_eq!(Event::from_frame(f), Event::Auth { token: "eyJ.x.y".into(), host: None });
+    let f = Frame::parse(r#"{"type":"auth","token":"t","host":"https://10.0.0.107"}"#).unwrap();
+    assert_eq!(
+        Event::from_frame(f),
+        Event::Auth { token: "t".into(), host: Some("https://10.0.0.107".into()) }
+    );
+}

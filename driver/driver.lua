@@ -11,6 +11,11 @@
     {"type":"hello","message":"..."}
     {"type":"bind","binding":7500,"class":"ONSCREEN_SELECTION","bound":true}
     {"type":"command","binding":5001,"room":31,"command":"UP","params":{...}}
+    {"type":"auth","token":"<Director REST JWT>"}
+
+  The token is minted here on the controller (POST 127.0.0.1:3000/api/v1/localjwt
+  with the client-cert headers nginx would set) and sent first on every connect,
+  so the sink can read the project itself. "Send Project Token" = No keeps it here.
 ]]--
 
 TargetIP   = "192.168.1.146"
@@ -19,6 +24,7 @@ TargetPort = 9010
 local gClient        -- persistent TCP client
 local gConnected = false
 local gQueue = {}     -- outbound line buffer (flushed on connect)
+local gToken          -- Director REST JWT, minted on the controller
 
 local function log(...) print("[nav-sink] " .. table.concat({...}, " ")) end
 
@@ -51,6 +57,7 @@ local function connect()
     :OnConnect(function(_)
       gConnected = true
       C4:UpdateProperty("Link Status", "connected " .. TargetIP .. ":" .. TargetPort)
+      if gToken then table.insert(gQueue, 1, '{"type":"auth","token":' .. jstr(gToken) .. '}') end
       flush()
     end)
     :OnDisconnect(function(_, _)
@@ -77,6 +84,34 @@ local function emit_command(binding, room, command, tParams)
     tostring(binding), r, jstr(command), jparams(tParams)))
 end
 
+-- ---- Director REST token ------------------------------------------------------
+-- Tokens last ~24 h; refreshed every 12 h and re-sent on every reconnect.
+local function mint_token()
+  if Properties["Send Project Token"] == "No" then
+    gToken = nil
+    C4:UpdateProperty("Token Status", "off")
+    return
+  end
+  C4:url()
+    :SetOptions({ timeout = 10, fail_on_error = false })
+    :OnDone(function(_, responses, errCode, errMsg)
+      local r = responses and responses[#responses]
+      local tok = r and r.code == 200 and r.body and r.body:match('"token"%s*:%s*"([^"]+)"')
+      if tok then
+        gToken = tok
+        C4:UpdateProperty("Token Status", "minted " .. os.date("%Y-%m-%d %H:%M"))
+        send('{"type":"auth","token":' .. jstr(tok) .. '}')
+      else
+        C4:UpdateProperty("Token Status", "mint failed: " .. tostring(r and r.code or errMsg or errCode))
+      end
+    end)
+    :Post("http://127.0.0.1:3000/api/v1/localjwt", "{}", {
+      ["Content-Type"] = "application/json",
+      ["X-SSL-CERT-VERIFY"] = "SUCCESS",
+      ["X-SSL-CERT-CLIENT_S_DN"] = "CN=Composer_tech@control4.com_dev,O=Control4",
+    })
+end
+
 -- ---- DriverWorks entry points ----------------------------------------------
 function ReceivedFromProxy(idBinding, strCommand, tParams)
   tParams = tParams or {}
@@ -100,7 +135,8 @@ end
 function OnPropertyChanged(strProperty)
   local v = Properties[strProperty]
   if strProperty == "Target IP Address" then TargetIP = v
-  elseif strProperty == "Target Port" then TargetPort = tonumber(v) or TargetPort end
+  elseif strProperty == "Target Port" then TargetPort = tonumber(v) or TargetPort
+  elseif strProperty == "Send Project Token" then mint_token() end
 end
 
 function OnDriverInit() end
@@ -110,6 +146,8 @@ function OnDriverLateInit()
   TargetPort = tonumber(Properties["Target Port"]) or TargetPort
   connect()
   send('{"type":"hello","message":"Control4 Navigator Sink online"}')
+  mint_token()
+  C4:SetTimer(12 * 3600 * 1000, function() mint_token() end, true)
 end
 
 function OnDriverDestroyed()

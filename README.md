@@ -74,6 +74,9 @@ cd driver && ./package.sh          # -> ohc-nav-sink.c4z
 In Composer Pro: add the driver, set **Target IP/Port** to the host running the
 sink, bind **HDMI (Audio/Video)** to a TV input (the Onscreen Navigator
 auto-binds). Press the room's **C4/menu** button and the nav keys stream to the sink.
+It also mints a Director REST token on the controller and sends it first on each
+connect (`auth` frame), so the sink can read the project with no credentials of its
+own; **Send Project Token** = `No` turns that off.
 
 ## As a submodule (from control4-fake-navigator)
 
