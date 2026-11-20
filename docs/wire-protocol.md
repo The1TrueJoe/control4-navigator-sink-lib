@@ -32,6 +32,22 @@ Any command from `ReceivedFromProxy` / `ExecuteCommand`.
 `room` is `null` when Director didn't scope the command; `params` is a flat
 `string -> string` map.
 
+### `auth`
+A Director REST token, minted by the driver on the controller and sent first
+on every connect and again on each refresh (every 12 h; tokens last ~24 h).
+```json
+{"type":"auth","token":"eyJ..."}
+```
+`host` (optional) is the API base; without it the sink uses
+`https://<address the driver connected from>`, the controller the driver runs
+on. This is what lets a sink show the real project with no `.env` and no SSH.
+
+The driver mints it the way `scripts/mint-token.sh` (control4-fake-navigator)
+does, but locally: `POST http://127.0.0.1:3000/api/v1/localjwt` with the
+`X-SSL-CERT-*` headers nginx would have set. The token is a Director-wide
+credential travelling over plain TCP on the LAN; set the driver's **Send Project
+Token** to `No` to keep it on the controller (the sink then needs its own).
+
 ## Command semantics (how the lib maps them to `Event`)
 
 | Command (on the wire)            | Binding | Meaning / `Event`                              |

@@ -6,8 +6,8 @@
   <manufacturer>Joseph Telaak</manufacturer>
   <model>c4-nav-sink</model>
   <created>2026-09-07</created>
-  <modified>2026-09-07</modified>
-  <version>1</version>
+  <modified>2026-11-17</modified>
+  <version>2</version>
   <control>lua_gen</control>
   <controlmethod>ip</controlmethod>
   <driver>DriverWorks</driver>
@@ -59,6 +59,9 @@
         <tooltip>Host running the control4-navigator-sink-lib sink.</tooltip></property>
       <property><name>Target Port</name><type>RANGED_INTEGER</type><minimum>1</minimum><maximum>65535</maximum><default>9010</default></property>
       <property><name>Last Command</name><type>STRING</type><readonly>true</readonly><default></default></property>
+      <property><name>Send Project Token</name><type>LIST</type><items><item>Yes</item><item>No</item></items><default>Yes</default>
+        <tooltip>Mint a Director REST token on this controller and send it to the sink, so it can show the project with no credentials of its own.</tooltip></property>
+      <property><name>Token Status</name><type>STRING</type><readonly>true</readonly><default></default></property>
       <property><name>Link Status</name><type>STRING</type><readonly>true</readonly><default>disconnected</default></property>
     </properties>
     <actions><action><name>Send Test Line</name><command>TEST_LINK</command></action></actions>
